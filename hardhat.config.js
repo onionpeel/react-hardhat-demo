@@ -8,5 +8,10 @@ module.exports = {
   solidity: "0.7.3",
   paths: {
     artifacts: './frontend/src/contracts'
+  },
+  networks: {
+  hardhat: {
+    chainId: 1337
   }
+}
 };
