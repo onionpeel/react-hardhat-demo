@@ -10,6 +10,7 @@ async function main() {
 
   console.log("Account balance:", (await deployer.getBalance()).toString());
 
+  //Deploy MyToken
   const MyToken = await ethers.getContractFactory('MyToken');
   const exp = ethers.BigNumber.from('10').pow(18);
   const initialValue = ethers.BigNumber.from('100').mul(exp);
@@ -17,7 +18,15 @@ async function main() {
 
   console.log("Token address:", myToken.address);
 
-  setMyTokenAddressInCompiledContracts(myToken)
+  setAddressInCompiledContracts(myToken, "MyToken");
+
+  //Deploy Faucet
+  const Faucet = await ethers.getContractFactory('Faucet');
+  const faucet = await Faucet.deploy(myToken.address);
+
+  console.log('faucet: ', faucet.address);
+
+  setAddressInCompiledContracts(faucet, "Faucet");
 };
 
 main()
@@ -27,21 +36,21 @@ main()
     process.exit(1);
   });
 
-
-const setMyTokenAddressInCompiledContracts = myToken => {
+//This function gives the front end access to the address of the contract, which Ethers uses to generate a local instance
+const setAddressInCompiledContracts = (instance, contractAsString) => {
   const fs = require("fs");
   const path = require('path');
 
-  const contractsDir = path.join(__dirname, "..", "frontend", "src", "contracts", "contracts");
+  const contractsDir = path.join(__dirname, "..", "frontend", "src", "contracts", "contracts", `${contractAsString}`);
 
   if (!fs.existsSync(contractsDir)) {
     fs.mkdirSync(contractsDir);
   };
 
-  myTokenAddressPath = path.join(contractsDir, "contract-address.json");
-
+  instanceAddressPath = path.join(contractsDir, "contract-address.json");
+  //Write the address of the deployed contract to the src directory of the front end
   fs.writeFileSync(
-    myTokenAddressPath,
-    JSON.stringify({ MyToken: myToken.address }, undefined, 2)
+    instanceAddressPath,
+    JSON.stringify({ [contractAsString]: instance.address }, undefined, 2)
   );
 };
