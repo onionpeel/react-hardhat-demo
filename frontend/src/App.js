@@ -3,15 +3,22 @@ import { ethers } from 'ethers';
 import detectEthereumProvider from '@metamask/detect-provider';
 import './App.css';
 import MyToken from './contracts/contracts/MyToken.sol/MyToken.json';
-import contractAddress from './contracts/contracts/contract-address.json';
+import myTokenContractAddress from './contracts/contracts/MyToken/contract-address.json';
+import Faucet from './contracts/contracts/Faucet.sol/Faucet.json';
+import faucetContractAddress from './contracts/contracts/Faucet/contract-address.json';
 
 function App() {
   let [isConnected, setIsConnected] = useState();
   let [isLoading, setIsLoading] = useState();
   let [currentMetaMaskAccount, setCurrentMetaMaskAccount] = useState();
   let [myToken, setMyToken] = useState();
+  let [faucet, setFaucet] = useState();
   let [tokenName, setTokenName] = useState();
   let [tokenSymbol, setTokenSymbol] = useState();
+  let [userBalance, setUserBalance] = useState();
+  let [faucetBalance, setFaucetBalance] = useState();
+
+  let [tokensWanted, setTokensWanted] = useState();
 
   useEffect(() => {
     const init = async () => {
@@ -43,15 +50,25 @@ function App() {
         console.log('ethersProvider: ', ethersProvider)
         //Create a reference to the deployed MyToken contract
         const _myToken = new ethers.Contract(
-          contractAddress.MyToken,
+          myTokenContractAddress.MyToken,
           MyToken.abi,
           ethersProvider.getSigner(0)
         );
         setMyToken(_myToken);
 
-        const signer = ethersProvider.getSigner();
-        let addr = await signer.getAddress();
-        console.log('signer: ', addr)
+        //Create a reference to the deployed Faucet contract
+        const _faucet = new ethers.Contract(
+          faucetContractAddress.Faucet,
+          Faucet.abi,
+          ethersProvider.getSigner(0)
+        )
+        setFaucet(_faucet);
+
+        getNameAndSymbol(_myToken);
+        getFaucetBalance(_faucet);
+
+        let signerAddress = await ethersProvider.getSigner(0).getAddress();
+        getUserBalance(_myToken, signerAddress);
 
         //Create a reference in state to the current MetaMask account
         let accounts = await provider.request({ method: 'eth_accounts' });
@@ -64,44 +81,72 @@ function App() {
     init();
   }, []);
 
-  const getName = async () => {
-    let name = await myToken.name();
-    console.log(name);
+  const handleTokensWantedOnChange = e => {
+    setTokensWanted(e.target.value);
   };
 
-
-  const getTokens = async () => {
+  const handleTokensWantedOnClick = async e => {
     const exp = ethers.BigNumber.from('10').pow(18);
-    let tokens = ethers.BigNumber.from(50).mul(exp);
-    await myToken.connect('0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266').approve(currentMetaMaskAccount, tokens);
-    // await myToken.connect(currentMetaMaskAccount).transferFrom('0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266', currentMetaMaskAccount, tokens);
-    // let bal = await myToken.balanceOf(currentMetaMaskAccount);
-    // bal = bal/exp;
-    // console.log(bal);
+    let amount = ethers.BigNumber.from(tokensWanted).mul(exp);
+    await faucet.getTokens(amount);
   };
-  // const _getTokenData = async (_myToken) => {
-  //   const name = await _myToken.name();
-  //   setTokenName(name);
-  //
-  //   const symbol = await _myToken.symbol();
-  //   setTokenSymbol(symbol);
-  // };
+
+  const getTokenBalance = async () => {
+    const exp = ethers.BigNumber.from('10').pow(18);
+    let b = ethers.BigNumber.from(await myToken.balanceOf(currentMetaMaskAccount));
+    b = b/exp;
+    setUserBalance(b.toString());
+    console.log('user balance: ', b.toString());
+  };
+
+  const getNameAndSymbol = async _myToken => {
+    let name = await _myToken.name();
+    setTokenName(name);
+    let symbol = await _myToken.symbol();
+    setTokenSymbol(symbol);
+  };
+
+  const getUserBalance = async (_myToken, account) => {
+    const exp = ethers.BigNumber.from('10').pow(18);
+    let b = await _myToken.balanceOf(account);
+    b = b/exp;
+    setUserBalance(b.toString());
+  };
+
+  const getFaucetBalance = async (_faucet) => {
+    const exp = ethers.BigNumber.from('10').pow(18);
+    let b = await _faucet.getFaucetOwnerBalance();
+    b = b/exp;
+    setFaucetBalance(b.toString());
+  };
 
   return (
     <div className="app-margin">
       <div>
-        The symbol for <b></b> is <b>{tokenSymbol}</b>
+        The symbol for <b>{tokenName}</b> is <b>{tokenSymbol}</b>
+      </div>
+      <div>
+        The faucet contract has <b>{faucetBalance}</b> <b>{tokenSymbol}</b> tokens
       </div>
       <br></br>
       <div>
         The current user address: {currentMetaMaskAccount}
       </div>
       <br></br>
-      <button onClick={getName}>get name</button>
       <div>
-        {tokenName}
+        The user's token balance is: {userBalance}
       </div>
-      <button onClick={getTokens}>get tokens</button>
+      <div>
+        <button onClick={getTokenBalance}>update balance</button>
+      </div>
+      <br></br>
+      <div>
+        <label htmlFor="amount">How many tokens do you want from the faucet contract? </label>
+        <input type="text" id="amount" name="amount" onChange={handleTokensWantedOnChange}></input>
+      </div>
+      <div>
+        <button onClick={handleTokensWantedOnClick}>Get your tokens</button>
+      </div>
     </div>
   );
 }

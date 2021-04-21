@@ -13,7 +13,7 @@ async function main() {
   //Deploy MyToken
   const MyToken = await ethers.getContractFactory('MyToken');
   const exp = ethers.BigNumber.from('10').pow(18);
-  const initialValue = ethers.BigNumber.from('100').mul(exp);
+  const initialValue = ethers.BigNumber.from('1000000').mul(exp);
   const myToken = await MyToken.deploy(initialValue);
 
   console.log("Token address:", myToken.address);
@@ -27,6 +27,15 @@ async function main() {
   console.log('faucet: ', faucet.address);
 
   setAddressInCompiledContracts(faucet, "Faucet");
+
+  //transfer balance from deployer to faucet address;
+  await myToken.transfer(faucet.address, initialValue);
+  let faucetBalance = await myToken.balanceOf(faucet.address);
+  let deployerBalance = await myToken.balanceOf(deployer.address);
+  faucetBalance = faucetBalance/exp;
+  deployerBalance = deployerBalance/exp;
+  console.log('faucetBalance: ', faucetBalance);
+  console.log('deployerBalance: ', deployerBalance);
 };
 
 main()
