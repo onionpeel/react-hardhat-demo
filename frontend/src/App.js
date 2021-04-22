@@ -16,7 +16,6 @@ function App() {
   let [tokenSymbol, setTokenSymbol] = useState();
   let [userBalance, setUserBalance] = useState();
   let [faucetBalance, setFaucetBalance] = useState();
-
   let [tokensWanted, setTokensWanted] = useState();
 
   useEffect(() => {
@@ -44,12 +43,15 @@ function App() {
         //ERROR HANDLING
 
         const ethersProvider = new ethers.providers.Web3Provider(provider);
+        const signer = ethersProvider.getSigner();
+        let signerAddress = await signer.getAddress();
+        setCurrentMetaMaskAccount(signerAddress);
 
         //Create a reference to the deployed MyToken contract
         const _myToken = new ethers.Contract(
           myTokenContractAddress.MyToken,
           MyToken.abi,
-          ethersProvider.getSigner(0)
+          signer
         );
         setMyToken(_myToken);
 
@@ -57,21 +59,14 @@ function App() {
         const _faucet = new ethers.Contract(
           faucetContractAddress.Faucet,
           Faucet.abi,
-          ethersProvider.getSigner(0)
+          signer
         )
         setFaucet(_faucet);
 
         //set various properties into state
         getNameAndSymbol(_myToken);
         getFaucetBalance(_faucet);
-        let signerAddress = await ethersProvider.getSigner(0).getAddress();
         getUserBalance(_myToken, signerAddress);
-
-        //Create a reference in state to the current MetaMask account
-        let accounts = await provider.request({ method: 'eth_accounts' });
-        if (accounts.length > 0) {
-          setCurrentMetaMaskAccount(accounts[0]);
-        };
       };
     };
     init();
