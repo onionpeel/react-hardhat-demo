@@ -1,6 +1,4 @@
 async function main() {
-  //This script needs to be updated so that the deployer is a real account so that it can be put on a testnet
-
   const [deployer] = await ethers.getSigners();
 
   console.log(
