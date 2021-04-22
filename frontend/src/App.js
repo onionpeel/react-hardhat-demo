@@ -42,10 +42,10 @@ function App() {
         //POLLING?
         //ERROR HANDLING
 
-        const ethersProvider = new ethers.providers.Web3Provider(provider);
+        const ethersProvider = new ethers.providers.FallbackProvider(provider);
         const signer = ethersProvider.getSigner();
-        let signerAddress = await signer.getAddress();
-        setCurrentMetaMaskAccount(signerAddress);
+        // let signerAddress = await signer.getAddress();
+        // setCurrentMetaMaskAccount(signerAddress);
 
         //Create a reference to the deployed MyToken contract
         const _myToken = new ethers.Contract(
@@ -66,43 +66,43 @@ function App() {
         //set various properties into state
         getNameAndSymbol(_myToken);
         getFaucetBalance(_faucet);
-        getUserBalance(_myToken, signerAddress);
+        // getUserBalance(_myToken, signerAddress);
       };
     };
     init();
   }, []);
 
-  const handleTokensWantedOnChange = e => {
-    setTokensWanted(e.target.value);
-  };
+  // const handleTokensWantedOnChange = e => {
+  //   setTokensWanted(e.target.value);
+  // };
 
-  const handleTokensWantedOnClick = async e => {
-    setIsLoading(true);
-    const exp = ethers.BigNumber.from('10').pow(18);
-    let amount = ethers.BigNumber.from(tokensWanted).mul(exp);
-    let tx = await faucet.getTokens(amount);
-    await tx.wait();
-    setIsLoading(false);
-  };
+  // const handleTokensWantedOnClick = async e => {
+  //   setIsLoading(true);
+  //   const exp = ethers.BigNumber.from('10').pow(18);
+  //   let amount = ethers.BigNumber.from(tokensWanted).mul(exp);
+  //   let tx = await faucet.getTokens(amount);
+  //   await tx.wait();
+  //   setIsLoading(false);
+  // };
+  //
+  // const handleOnReturn = async () => {
+  //   setIsLoading(true);
+  //   let roundedUserBalance = Math.floor(userBalance);
+  //   const exp = ethers.BigNumber.from('10').pow(18);
+  //   const returnAmount = ethers.BigNumber.from(roundedUserBalance).mul(exp);
+  //   let tx = await myToken.transfer(faucet.address, returnAmount);
+  //   await tx.wait();
+  //   setIsLoading(false);
+  // };
 
-  const handleOnReturn = async () => {
-    setIsLoading(true);
-    let roundedUserBalance = Math.floor(userBalance);
-    const exp = ethers.BigNumber.from('10').pow(18);
-    const returnAmount = ethers.BigNumber.from(roundedUserBalance).mul(exp);
-    let tx = await myToken.transfer(faucet.address, returnAmount);
-    await tx.wait();
-    setIsLoading(false);
-  };
-
-  const getTokenBalance = async () => {
-    setIsLoading(true);
-    const exp = ethers.BigNumber.from('10').pow(18);
-    let b = ethers.BigNumber.from(await myToken.balanceOf(currentMetaMaskAccount));
-    b = b/exp;
-    setUserBalance(b.toString());
-    setIsLoading(false);
-  };
+  // const getTokenBalance = async () => {
+  //   setIsLoading(true);
+  //   const exp = ethers.BigNumber.from('10').pow(18);
+  //   let b = ethers.BigNumber.from(await myToken.balanceOf(currentMetaMaskAccount));
+  //   b = b/exp;
+  //   setUserBalance(b.toString());
+  //   setIsLoading(false);
+  // };
 
   const getNameAndSymbol = async _myToken => {
     let name = await _myToken.name();
@@ -111,14 +111,14 @@ function App() {
     setTokenSymbol(symbol);
   };
 
-  const getUserBalance = async (_myToken, account) => {
-    setIsLoading(true);
-    const exp = ethers.BigNumber.from('10').pow(18);
-    let b = await _myToken.balanceOf(account);
-    b = b/exp;
-    setUserBalance(b.toString());
-    setIsLoading(false);
-  };
+  // const getUserBalance = async (_myToken, account) => {
+  //   setIsLoading(true);
+  //   const exp = ethers.BigNumber.from('10').pow(18);
+  //   let b = await _myToken.balanceOf(account);
+  //   b = b/exp;
+  //   setUserBalance(b.toString());
+  //   setIsLoading(false);
+  // };
 
   const getFaucetBalance = async (_faucet) => {
     setIsLoading(true);
@@ -140,7 +140,7 @@ function App() {
       <div>
         The faucet contract has <b>{faucetBalance}</b> <b>{tokenSymbol}</b> tokens
       </div>
-      <div>
+      {/*}<div>
         Refresh browser to update faucet contract balance
       </div>
       <br></br>
@@ -172,7 +172,7 @@ function App() {
       <br></br>
       <div>
         {isLoading ? "Loading . . ." : ""}
-      </div>
+      </div> */}
     </div>
   );
 }
