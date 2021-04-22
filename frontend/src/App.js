@@ -47,7 +47,7 @@ function App() {
         let signerAddress = await signer.getAddress();
         setCurrentMetaMaskAccount(signerAddress);
 
-        //Create a reference to the deployed MyToken contract
+        // Create a reference to the deployed MyToken contract
         const _myToken = new ethers.Contract(
           myTokenContractAddress.MyToken,
           MyToken.abi,
@@ -55,7 +55,7 @@ function App() {
         );
         setMyToken(_myToken);
 
-        //Create a reference to the deployed Faucet contract
+        // Create a reference to the deployed Faucet contract
         const _faucet = new ethers.Contract(
           faucetContractAddress.Faucet,
           Faucet.abi,
@@ -131,6 +131,9 @@ function App() {
 
   return (
     <div className="app-margin">
+      <div>
+        Rinkeby network
+      </div>
       <div>
         The symbol for <b>{tokenName}</b> is <b>{tokenSymbol}</b>
       </div>
