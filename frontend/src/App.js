@@ -8,7 +8,6 @@ import Faucet from './contracts/contracts/Faucet.sol/Faucet.json';
 import faucetContractAddress from './contracts/contracts/Faucet/contract-address.json';
 
 function App() {
-  let [isConnected, setIsConnected] = useState();
   let [isLoading, setIsLoading] = useState();
   let [currentMetaMaskAccount, setCurrentMetaMaskAccount] = useState();
   let [myToken, setMyToken] = useState();
@@ -28,7 +27,6 @@ function App() {
         startApp(provider);
       } else {
         alert('Please install MetaMask!');
-        setIsConnected(false);
         setIsLoading(false);
         return;
       };
@@ -37,7 +35,6 @@ function App() {
         //The provider detected by detectEthereumProvider() is the same as window.ethereum
         if (provider !== window.ethereum) {
           alert('Do you have multiple wallets installed?');
-          setIsConnected(false);
           setIsLoading(false);
           return;
         };
@@ -47,7 +44,7 @@ function App() {
         //ERROR HANDLING
 
         const ethersProvider = new ethers.providers.Web3Provider(provider);
-        console.log('ethersProvider: ', ethersProvider)
+
         //Create a reference to the deployed MyToken contract
         const _myToken = new ethers.Contract(
           myTokenContractAddress.MyToken,
@@ -64,16 +61,15 @@ function App() {
         )
         setFaucet(_faucet);
 
+        //set various properties into state
         getNameAndSymbol(_myToken);
         getFaucetBalance(_faucet);
-
         let signerAddress = await ethersProvider.getSigner(0).getAddress();
         getUserBalance(_myToken, signerAddress);
 
         //Create a reference in state to the current MetaMask account
         let accounts = await provider.request({ method: 'eth_accounts' });
         if (accounts.length > 0) {
-          setIsConnected(true);
           setCurrentMetaMaskAccount(accounts[0]);
         };
       };
@@ -86,17 +82,31 @@ function App() {
   };
 
   const handleTokensWantedOnClick = async e => {
+    setIsLoading(true);
     const exp = ethers.BigNumber.from('10').pow(18);
     let amount = ethers.BigNumber.from(tokensWanted).mul(exp);
-    await faucet.getTokens(amount);
+    let tx = await faucet.getTokens(amount);
+    await tx.wait();
+    setIsLoading(false);
+  };
+
+  const handleOnReturn = async () => {
+    setIsLoading(true);
+    let roundedUserBalance = Math.floor(userBalance);
+    const exp = ethers.BigNumber.from('10').pow(18);
+    const returnAmount = ethers.BigNumber.from(roundedUserBalance).mul(exp);
+    let tx = await myToken.transfer(faucet.address, returnAmount);
+    await tx.wait();
+    setIsLoading(false);
   };
 
   const getTokenBalance = async () => {
+    setIsLoading(true);
     const exp = ethers.BigNumber.from('10').pow(18);
     let b = ethers.BigNumber.from(await myToken.balanceOf(currentMetaMaskAccount));
     b = b/exp;
     setUserBalance(b.toString());
-    console.log('user balance: ', b.toString());
+    setIsLoading(false);
   };
 
   const getNameAndSymbol = async _myToken => {
@@ -107,17 +117,21 @@ function App() {
   };
 
   const getUserBalance = async (_myToken, account) => {
+    setIsLoading(true);
     const exp = ethers.BigNumber.from('10').pow(18);
     let b = await _myToken.balanceOf(account);
     b = b/exp;
     setUserBalance(b.toString());
+    setIsLoading(false);
   };
 
   const getFaucetBalance = async (_faucet) => {
+    setIsLoading(true);
     const exp = ethers.BigNumber.from('10').pow(18);
     let b = await _faucet.getFaucetOwnerBalance();
     b = b/exp;
     setFaucetBalance(b.toString());
+    setIsLoading(false);
   };
 
   return (
@@ -127,6 +141,9 @@ function App() {
       </div>
       <div>
         The faucet contract has <b>{faucetBalance}</b> <b>{tokenSymbol}</b> tokens
+      </div>
+      <div>
+        Refresh browser to update faucet contract balance
       </div>
       <br></br>
       <div>
@@ -145,7 +162,18 @@ function App() {
         <input type="text" id="amount" name="amount" onChange={handleTokensWantedOnChange}></input>
       </div>
       <div>
-        <button onClick={handleTokensWantedOnClick}>Get your tokens</button>
+        <button onClick={handleTokensWantedOnClick}>Get tokens</button>
+      </div>
+      <br></br>
+      <div>
+        <b>Please return all your tokens when you are finished so the faucet contract does not become empty</b>
+      </div>
+      <div>
+        <button onClick={handleOnReturn}>Return tokens</button>
+      </div>
+      <br></br>
+      <div>
+        {isLoading ? "Loading . . ." : ""}
       </div>
     </div>
   );
