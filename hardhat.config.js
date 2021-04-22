@@ -1,3 +1,4 @@
+require('dotenv').config()
 require("@nomiclabs/hardhat-waffle");
 
 /**
@@ -5,4 +6,12 @@ require("@nomiclabs/hardhat-waffle");
  */
 module.exports = {
   solidity: "0.7.3",
+  paths: {
+    artifacts: './frontend/src/contracts'
+  },
+  networks: {
+  hardhat: {
+    chainId: 1337
+  }
+}
 };
