@@ -132,6 +132,9 @@ function App() {
   return (
     <div className="app-margin">
       <div>
+        Rinkeby network
+      </div>
+      <div>
         The symbol for <b>{tokenName}</b> is <b>{tokenSymbol}</b>
       </div>
       <div>
