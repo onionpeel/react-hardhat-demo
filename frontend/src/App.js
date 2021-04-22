@@ -42,7 +42,7 @@ function App() {
         //POLLING?
         //ERROR HANDLING
 
-        const ethersProvider = new ethers.providers.FallbackProvider(provider);
+        const ethersProvider = new ethers.providers.FallbackProvider([provider]);
         const signer = ethersProvider.getSigner();
         // let signerAddress = await signer.getAddress();
         // setCurrentMetaMaskAccount(signerAddress);
