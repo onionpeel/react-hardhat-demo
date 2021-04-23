@@ -43,7 +43,9 @@ function App() {
         //ERROR HANDLING
 
         const ethersProvider = new ethers.providers.Web3Provider(provider);
+        console.log('ethersProvider: ', ethersProvider);
         const signer = ethersProvider.getSigner();
+        console.log('signer: ', signer);
         let signerAddress = await signer.getAddress();
         setCurrentMetaMaskAccount(signerAddress);
 
@@ -60,7 +62,7 @@ function App() {
           faucetContractAddress.Faucet,
           Faucet.abi,
           signer
-        )
+        );
         setFaucet(_faucet);
 
         //set various properties into state

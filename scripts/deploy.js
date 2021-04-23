@@ -27,7 +27,8 @@ async function main() {
   setAddressInCompiledContracts(faucet, "Faucet");
 
   //transfer balance from deployer to faucet address;
-  await myToken.transfer(faucet.address, initialValue);
+  let tx = await myToken.transfer(faucet.address, initialValue);
+  await tx.wait();
   let faucetBalance = await myToken.balanceOf(faucet.address);
   let deployerBalance = await myToken.balanceOf(deployer.address);
   faucetBalance = faucetBalance/exp;
